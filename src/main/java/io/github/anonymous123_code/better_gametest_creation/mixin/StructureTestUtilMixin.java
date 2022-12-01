@@ -4,7 +4,6 @@ import io.github.anonymous123_code.better_gametest_creation.BetterGametestCreati
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.Structure;
-import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.test.StructureTestUtil;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,18 +27,23 @@ public abstract class StructureTestUtilMixin {
 	private static void betterGametestCreation$createStructure(String id, ServerWorld world, CallbackInfoReturnable<Structure> ci) {
 		if (!BetterGametestCreationMod.getMainConfig().gametestApiSearchFix) return;
 
-		StructureTemplateManager structureTemplateManager = world.getStructureTemplateManager();
-		Optional<Structure> optional = structureTemplateManager.getStructure(new Identifier(id));
+		Optional<Structure> optional = world.getStructureTemplateManager().getStructure(new Identifier(id));
 		if (optional.isPresent()) {
 			ci.setReturnValue(optional.get());
 		} else {
-			String string = id + ".snbt";
-			Path path = Paths.get(BetterGametestCreationMod.getMainConfig().gametestSearchStructuresPath, string);
-			NbtCompound nbtCompound = loadSnbt(path);
-			if (nbtCompound == null) {
+			Identifier structureId = new Identifier(id);
+			String fileName = structureId.getPath() + ".snbt";
+			Path path;
+			if (BetterGametestCreationMod.getMainConfig().stripModIDfromSearchStructurePath) {
+				path = Paths.get(BetterGametestCreationMod.getMainConfig().gametestSearchStructuresPath, fileName);
+			} else {
+				path = Paths.get(BetterGametestCreationMod.getMainConfig().gametestSearchStructuresPath, structureId.getNamespace(), fileName);
+			}
+			NbtCompound result = loadSnbt(path);
+			if (result == null) {
 				BetterGametestCreationMod.LOGGER.warn("failed to load structure for gametest" + id + ", trying fabric gametest API");
 			} else {
-				ci.setReturnValue(structureTemplateManager.createStructureFromNbt(nbtCompound));
+				ci.setReturnValue(world.getStructureTemplateManager().createStructureFromNbt(result));
 			}
 		}
 	}

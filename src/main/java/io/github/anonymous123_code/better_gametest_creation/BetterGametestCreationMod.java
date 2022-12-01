@@ -36,6 +36,9 @@ public class BetterGametestCreationMod implements ModInitializer {
 		@Comment("The custom directory to use when the gametestApiSearchFix is active")
 		public final String gametestSearchStructuresPath = "../gameteststructures";
 
+		@Comment("When true, the modid is stripped from the structure path, when false, it is used as a subfolder of gametest")
+		public final boolean stripModIDfromSearchStructurePath = true;
+
 		@Comment("When active, the output directory of /test export is changed")
 		public final boolean gametestCustomExportStructuresPath = true;
 		@Comment("The output directory of /test export")
