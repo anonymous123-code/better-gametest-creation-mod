@@ -6,10 +6,12 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.Structure;
 import net.minecraft.test.StructureTestUtil;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.nio.file.Path;
@@ -25,7 +27,7 @@ public abstract class StructureTestUtilMixin {
 
 	@Inject(at=@At(value = "HEAD"), cancellable = true, method = "createStructure(Ljava/lang/String;Lnet/minecraft/server/world/ServerWorld;)Lnet/minecraft/structure/Structure;")
 	private static void betterGametestCreation$createStructure(String id, ServerWorld world, CallbackInfoReturnable<Structure> ci) {
-		if (!BetterGametestCreationMod.getMainConfig().gametestApiSearchFix) return;
+		if (!BetterGametestCreationMod.<Boolean>getMainConfigValue("gametestApiSearchFix")) return;
 
 		Optional<Structure> optional = world.getStructureTemplateManager().getStructure(new Identifier(id));
 		if (optional.isPresent()) {
@@ -34,10 +36,10 @@ public abstract class StructureTestUtilMixin {
 			Identifier structureId = new Identifier(id);
 			String fileName = structureId.getPath() + ".snbt";
 			Path path;
-			if (BetterGametestCreationMod.getMainConfig().stripModIDfromSearchStructurePath) {
-				path = Paths.get(BetterGametestCreationMod.getMainConfig().gametestSearchStructuresPath, fileName);
+			if (BetterGametestCreationMod.<Boolean>getMainConfigValue("stripModIDfromSearchStructurePath")) {
+				path = Paths.get(BetterGametestCreationMod.getMainConfigValue("gametestSearchStructuresPath"), fileName);
 			} else {
-				path = Paths.get(BetterGametestCreationMod.getMainConfig().gametestSearchStructuresPath, structureId.getNamespace(), fileName);
+				path = Paths.get(BetterGametestCreationMod.getMainConfigValue("gametestSearchStructuresPath"), structureId.getNamespace(), fileName);
 			}
 			NbtCompound result = loadSnbt(path);
 			if (result == null) {
@@ -46,5 +48,12 @@ public abstract class StructureTestUtilMixin {
 				ci.setReturnValue(world.getStructureTemplateManager().createStructureFromNbt(result));
 			}
 		}
+	}
+
+	@ModifyArg(method = "createTestArea", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/StructureBlockBlockEntity;setStructureName(Lnet/minecraft/util/Identifier;)V"))
+	private static @Nullable Identifier modifyCreateTestArea(@Nullable Identifier structureName) {
+		if (!BetterGametestCreationMod.<Boolean>getMainConfigValue("gametestStructureBlockNamespaceTweak")) return structureName;
+
+		return new Identifier(BetterGametestCreationMod.getMainConfigValue("gametestStructureBlockTweakNamespace"), structureName.getPath());
 	}
 }
