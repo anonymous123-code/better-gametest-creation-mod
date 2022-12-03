@@ -51,7 +51,7 @@ public abstract class StructureTestUtilMixin {
 	}
 
 	@ModifyArg(method = "createTestArea", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/entity/StructureBlockBlockEntity;setStructureName(Lnet/minecraft/util/Identifier;)V"))
-	private static @Nullable Identifier modifyCreateTestArea(@Nullable Identifier structureName) {
+	private static @Nullable Identifier betterGametestCreation$createTestArea(@Nullable Identifier structureName) {
 		if (!BetterGametestCreationMod.<Boolean>getMainConfigValue("gametestStructureBlockNamespaceTweak")) return structureName;
 
 		return new Identifier(BetterGametestCreationMod.getMainConfigValue("gametestStructureBlockTweakNamespace"), structureName.getPath());

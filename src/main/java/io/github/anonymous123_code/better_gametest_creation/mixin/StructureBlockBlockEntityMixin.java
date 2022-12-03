@@ -37,7 +37,7 @@ public abstract class StructureBlockBlockEntityMixin extends BlockEntity {
 
 
 	@Inject(at=@At(value = "RETURN", ordinal = 2), method = "saveStructure(Z)Z")
-	public void saveStructure(boolean bl, CallbackInfoReturnable<Boolean> c) {
+	public void betterGametestCreation$saveStructure(boolean bl, CallbackInfoReturnable<Boolean> c) {
 		if (!BetterGametestCreationMod.<Boolean>getMainConfigValue("structureBlockSaveBehaviorTweak")) return;
 		if (this.structureName.getNamespace().equals(BetterGametestCreationMod.<String>getMainConfigValue("gametestStructureBlockTweakNamespace"))) {
 			if (world == null || world.getServer() == null) {
@@ -45,12 +45,12 @@ public abstract class StructureBlockBlockEntityMixin extends BlockEntity {
 			}
 			PlayerEntity targetPlayer = world.getServer().getPlayerManager().getPlayerList().stream().min((player1, player2) -> (int) (player1.squaredDistanceTo(Vec3d.ofCenter(pos)) - player2.squaredDistanceTo(Vec3d.ofCenter(pos)))).orElse(null);
 
-			export(targetPlayer != null ? targetPlayer.getCommandSource() : world.getServer().getCommandSource(), this.structureName);
+			betterGametestCreation$export(targetPlayer != null ? targetPlayer.getCommandSource() : world.getServer().getCommandSource(), this.structureName);
 		}
 	}
 
 	@Unique
-	private void export(ServerCommandSource source, Identifier structure) {
+	private void betterGametestCreation$export(ServerCommandSource source, Identifier structure) {
 		Path outputPath = Paths.get(StructureTestUtil.testStructuresDirectoryName);
 		Path inputPath = source.getWorld().getStructureTemplateManager().getStructurePath(structure, ".nbt");
 		Path resultFilePath = NbtProvider.convertNbtToSnbt(C_temnquoh.f_wntcbvuf, inputPath, structure.getPath(), outputPath);
